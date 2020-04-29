@@ -1,7 +1,5 @@
 package netent.slots
 
-import cats.effect.IO
-import netent.rng.RandomNumberGenerator
 import netent.slots.SlotGameRoundResult.{ Lost, Won }
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
@@ -41,10 +39,4 @@ class SlotGameSpec extends AnyFlatSpec with Matchers {
     val rng = new TestRNG(Vector(false, true))
     SlotGame.play(10, rng).unsafeRunSync() shouldBe Lost(10, RoundType.Free)
   }
-}
-
-class TestRNG(results: Vector[Boolean]) extends RandomNumberGenerator {
-  val resultsIterator = results.iterator
-  override def nextBoolean(probability: Double) =
-    IO.pure(resultsIterator.next())
 }
