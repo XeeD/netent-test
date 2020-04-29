@@ -1,7 +1,6 @@
 package netent.slots
 
-trait GameRoundResult[RT] {
+trait GameRoundResult {
   def bet: Int
-  def nextRound: RT
   def prize: Int
 }

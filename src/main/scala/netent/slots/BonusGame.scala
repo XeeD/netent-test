@@ -10,7 +10,7 @@ object BonusGameRoundType {
   case object Normal extends BonusGameRoundType
 }
 
-sealed trait BonusGameRoundResult extends GameRoundResult[BonusGameRoundType]
+sealed trait BonusGameRoundResult extends GameRoundResult
 
 object BonusGameRoundResult {
   case class Lost(bet: Int) extends BonusGameRoundResult {
@@ -39,13 +39,16 @@ object BonusGame {
 
   val BONUS_ROUND_PROBABILITY = 0.1
 
+  /**
+    * This method is called every time the player presses Spin button.
+    * If a bonus round is hit, the player is asked to choose one of the boxes.
+    * The round ends when the player hits a losing box.
+    * @param bet The amount user bets on this spin
+    * @param chooseBox A callback provides player's choice of the number of the box
+    * @param rng The random number generator to be used
+    * @return The result of this spin with accumulated prize from the bonus round.
+    */
   def play(bet: Int, chooseBox: IO[Int], rng: RandomNumberGenerator): IO[BonusGameRoundResult] =
-    playNormalRound(bet, chooseBox, rng)
-
-  private def playNormalRound(
-      bet: Int,
-      chooseBox: IO[Int],
-      rng: RandomNumberGenerator): IO[BonusGameRoundResult] =
     for {
       wonBonusRound <- rng.nextBoolean(BONUS_ROUND_PROBABILITY)
 
@@ -71,6 +74,7 @@ object BonusGame {
           BoxGame
             .make(rng)
             .flatMap(nextBoxGame =>
+              // A recursive call. It is stack-safe since we are suspended in an IO monad.
               playBonusRound(chooseBox, nextBoxGame, bet, prizeSum + (bet / 2), rng))
     } yield result
 
